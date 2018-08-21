@@ -1,0 +1,60 @@
+---
+title: "统软07-1400012141"
+author:
+  - 邵智轩
+  - 1400012141
+  - 物理学院
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: no
+    number_sections: no
+    toc: no
+classoption: "hyperref,"
+---
+
+用`python`中`scipy.integrate`中的`dplquad`函数可以数值求解该积分，给出的结果为
+$$0.12584400\pm 1.5\times10^{-8}$$
+
+```{r,tidy=TRUE}
+f0 <- function(x, y) {
+    exp(-45 * (x + 0.4) ^ 2 - 60 * (y - 0.5) ^ 2)+0.5*exp(-90*(x-0.5)^2-45*(y+0.1)^4)
+}
+
+MeanMC <- function(f=f0,N = 1e5, seed = 1) {
+    set.seed(seed)
+    x <- runif(N, -1, 1)
+    y <- runif(N, -1, 1)
+    4 * mean(f(x, y))
+}
+
+g0 <- function(x, y, p) {
+    p * dnorm(x, -0.4, sqrt(1 / 90)) * dnorm(y, 0.5, sqrt(1 / 120))+(1 - p) * dnorm(x, 0.5, sqrt(1 / 180)) * dnorm(y, -0.1, sqrt(1 / 20))
+}
+
+ImportanceMC <- function(f = f0, g = g0, N = 1e5, seed = 1) {
+    set.seed(seed)
+    p <- 0.5358984
+    K <- rbinom(N, size = 1, prob = p)
+    x <- ifelse(K, rnorm(N, -0.4, sqrt(1 / 90)), rnorm(N, 0.5, sqrt(1 / 120)))
+    y <- ifelse(K, rnorm(N, 0.5, sqrt(1 / 180)), rnorm(N, -0.1, sqrt(1 / 20)))
+    mean(f(x,y)/g(x,y,p))
+}
+
+B <- 100
+start<-proc.time()
+MeanMC.record <- vapply(1:B, function(k) MeanMC(seed = k), FUN.VALUE = 1)
+MeanMC.time <- proc.time()
+MeanMC.time-start
+mean(MeanMC.record)
+sd(MeanMC.record)
+
+ImportanceMC.record <- vapply(1:B, function(k) ImportanceMC(seed = k), FUN.VALUE = 1)
+ImportanceMC.time <- proc.time()
+ImportanceMC.time-MeanMC.time
+mean(ImportanceMC.record)
+sd(ImportanceMC.record)
+```
+可以看到，两者结果都是正确的（与真值之差小于标准差），但是采用重要采样后，在总采样数相同的情况下（$1\times 10^5$），虽然花费的总时间更多，但是与真值的偏差更小，而且估计得标准差也更小，即重要采样法得精度更高。
+
+
