@@ -1,0 +1,26 @@
+---
+title: "第2次作业"
+author:
+  - 邵智轩
+  - 1400012141
+  - 物理学院
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: no
+    number_sections: no
+    toc: no
+classoption: "hyperref,"
+---
+
+# 第12章练习
+
+```{r}
+d.class=read.csv('class.csv',header = TRUE)
+#(1)
+d.class[d.class[,'age']>=15,]
+#(2)
+d.class[d.class[,'age']>=15 & d.class[,'sex']=='M',c('name','age')]
+#(3)
+x<-d.class$age;x
+```
