@@ -1,0 +1,39 @@
+---
+title: "统软08-1400012141"
+author:
+  - 邵智轩
+  - 1400012141
+  - 物理学院
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: no
+    number_sections: no
+    toc: no
+classoption: "hyperref,"
+---
+
+成绩汇总问题
+
+```{r}
+dm <- read.csv('subscore-subtype.csv', header=TRUE,
+               stringsAsFactors=FALSE)
+ds <- read.csv('subscore-subscore.csv', header=TRUE,
+               stringsAsFactors=FALSE)
+
+score_summary<-function(dm,ds){
+  resm<-data.frame(ds[1])#第一列是学号
+  for (qtype in unique(dm[,2])){
+    index<-which(dm[,2]==qtype)
+    if (length(index)>1){
+      resm[qtype]<-rowSums(ds[, paste('Y', index,sep='')])}
+    else {
+      resm[qtype]<-ds[, paste('Y', index,sep='')]
+    }
+  }
+  resm
+}
+
+resm<-score_summary(dm,ds)
+knitr::kable(resm[order(resm[,'学号']),], row.names=FALSE)
+```
