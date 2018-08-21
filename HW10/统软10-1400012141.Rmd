@@ -1,3 +1,36 @@
+---
+title: "机器学习作业"
+author:
+  - 邵智轩
+  - 1400012141
+  - 物理学院
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: no
+    number_sections: no
+    toc: no
+classoption: "hyperref,"
+---
+
+零均值高斯 ARMA(1,1) 模型：
+\begin{equation}
+  X_t=a X_{t-1}+e_t+b e_{t-1},\quad t=1,2,...,T
+\end{equation}
+其中$0<|a|<1$，$0<|b|<1$，$-a\ne b$，$\{e_t\}$为i.i.d. 的$N(0,\sigma^2)$分布。
+
+## 给定观测$x_1,x_2,...,x_T$，写出在$x_0=0$且$e_0=0$条件下的条件对数似然函数
+
+\begin{equation}
+  l(a,b,\sigma^2)=-\frac{T}{2}\log \sigma^2 -\frac{1}{2\sigma^2}\sum_{t=1}^T e_t^2
+\end{equation}
+（忽略常数项$-\frac{T}{2}\log(2\pi)$。其中，由可逆性可迭代解得$e_t$（含参数$a$、$b$）：
+\begin{equation}
+  e_t=X_t - a X_{t-1} - b e_{t-1},\quad t=1,2,...,T
+\end{equation}
+
+## 编程部分
+```{r}
 negLog <- function(theta, x) {
     # theta[1]=a, theta[2]=b, theta[3]=log(sigma^2)
     N <- length(x)
@@ -41,3 +74,4 @@ cat('真实b=', theta.real[2], 'MLE估计=', mean(theta.MLE[,2]),
     '估计的标准误=', sd(theta.MLE[,2]), '\n')
 cat('真实s2=', theta.real[3], 'MLE估计=', mean(theta.MLE[,3]),
     '估计的标准误=', sd(theta.MLE[,3]), '\n')
+```
