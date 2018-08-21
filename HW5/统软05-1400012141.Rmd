@@ -1,0 +1,73 @@
+---
+title: "在R Markdown文档中使用中文"
+author:
+  - 谢益辉
+  - 邱怡轩
+  - 于淼
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: no
+    number_sections: no
+    toc: no
+classoption: "hyperref,"
+---
+
+# 引言
+
+下图显示前24小时的房间温度与天花板温度的变化情况。
+
+```{r}
+update<-function(t,x1,x2,dt){
+  c(t+dt,
+          x1+dt*(0.35*(-9.7*sin((t+3)*pi/12)+8.3-x1)+0.46*(x2-x1)+11.1),
+          x2+dt*(0.28*(-9.7*sin((t+3)*pi/12)+8.3-x2)+0.46*(x1-x2)))
+}
+  
+t<-0;x1<-4;x2<-4;dt<-1.0/60/60;
+record=matrix(c(t,x1,x2),nrow=1)
+colnames(record)<-c('t','x1','x2')
+i<-0
+while(t<=24){
+  result<-update(t,x1,x2,dt)
+  t<-result[1];x1<-result[2];x2<-result[3];
+  if(i%%600==0){record<-rbind(record,result)}#每10分钟记录一次数据
+  i<-i+1
+}
+
+plot(record[,'t'],record[,'x1'],col='red',type='l')
+lines(record[,'t'],record[,'x2'],col='blue',lty=2)
+legend('topleft',col=c('red','blue'),lty=c(1,2),legend=c('x1','x2'))
+title('Change of temperature in 24 hours')
+```
+
+研究温度变化的周期性：
+```{r}
+while(t<=24*7){
+  result<-update(t,x1,x2,dt)
+  t<-result[1];x1<-result[2];x2<-result[3];
+  if(i%%600==0){record<-rbind(record,result)}#每10分钟记录一次数据
+  i<-i+1
+}
+
+plot(record[,'t'],record[,'x1'],col='red',type='l')
+lines(record[,'t'],record[,'x2'],col='blue',lty=2)
+legend('bottomright',col=c('red','blue'),lty=c(1,2),legend=c('x1','x2'))
+title("Change of temperature in 7 days")
+```
+可以看到温度变化具有明显的周期性。
+
+为求出具体的周期值，我比较相邻的两峰之间的距离。
+
+```{r}
+#研究周期
+#首先试图用sort函数找到峰值
+peaks<-head(sort(record[,'x1'],index.return=T,decreasing = T)$ix,n=7)
+peaks#前7个峰值的序号，似乎没有找到第一个峰
+peaks[7]<-which.max(record[1:200,'x1'])#找第一个峰
+record[c(peaks),]#各峰值处的时间，温度，可以看到，除了第一个峰，峰值的温度差不超过0.05
+#给出周期的估计，认为从第二个峰开始
+(record[max(peaks[1:6]),'t']-record[min(peaks[1:6]),'t'])/5
+```
+
+可以看到，温度变化的周期估计比较接近24 hours，符合我们的预期。
